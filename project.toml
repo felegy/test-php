@@ -1,0 +1,17 @@
+[_]
+schema-version = "0.2"
+
+[_.metadata]
+org.opencontainers.image.source = "https://git.saito.systems/felegy/test"
+org.opencontainers.image.description= "Test PHP cnb image"
+
+[io.buildpacks]
+builder = "heroku/builder:24"
+include = [
+    ".profile.d",
+    "Procfile",
+    "config",
+    "web",
+    "composer.json",
+    "composer.lock"
+]

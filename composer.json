@@ -1,0 +1,29 @@
+{
+    "name": "felegy/test",
+    "type": "project",
+    "require": {
+      "php": ">=7.4 <8.4",
+      "ext-gd": "*",
+      "ext-redis": "*",
+      "ext-mbstring": "*",
+      "ext-soap": "*",
+      "ext-exif": "*",
+      "ext-imagick": "*",
+      "ext-intl": "*"
+    },
+    "require-dev": {
+        "heroku/heroku-buildpack-php": "*"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Felegy\\Test\\": "web/"
+        }
+    },
+    "authors": [
+        {
+            "name": "felegy",
+            "email": "felegy@hvg.hu"
+        }
+    ]
+}
