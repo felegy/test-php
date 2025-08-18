@@ -1,0 +1,23 @@
+apiVersion: kpack.io/v1alpha2
+kind: ClusterBuilder
+metadata:
+  name: builder
+  namespace: kpack
+spec:
+  tag: ghcr.io/hvg-dev/test-builder
+  serviceAccountRef:
+    name: kpack-service-account
+    namespace: kpack
+  stack:
+    name: heroku-24
+    kind: ClusterStack
+  store:
+    name: default
+    kind: ClusterStore
+  order:
+  - group:
+    - id: heroku/php
+    - id: heroku/procfile
+  - group:
+    - id: heroku/nodejs
+    - id: heroku/procfile
