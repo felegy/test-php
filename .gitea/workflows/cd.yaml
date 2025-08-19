@@ -10,9 +10,20 @@ jobs:
       id: short-sha
       with:
         length: 10
-    - uses: gerlero/brew-install@v1
-      with:
-        packages: buildpacks-community/kpack-cli/kp
+    - name: Set up kpack-cli
+      env:
+        KPACK_CLI_VERSION: "0.13.0"
+      working-directory: /tmp
+      run: |
+        mkdir kp-binaries
+        curl -L "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}" -o kp-binaries/kp-linux-amd64-${KPACK_CLI_VERSION}
+        curl -LO "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}.sha256"
+        sha256sum -c kp-linux-amd64-${KPACK_CLI_VERSION}.sha256 || exit 1
+        sudo mv kp-binaries/kp-linux-amd64-${KPACK_CLI_VERSION} /usr/local/bin/kp
+        sudo chmod +x /usr/local/bin/kp
+        kp version
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
     - name: Configure kubectl
       uses: azure/k8s-set-context@v1
       with:
@@ -26,7 +37,10 @@ jobs:
     - name: Wait for build to complete
       run: |
         BUILD=$(kubectl -n test-builder get image tutorial-image -o jsonpath='{.status.buildCounter}')
+        BUILD_REF=$(kubectl -n test-builder get image tutorial-image -o jsonpath='{.status.latestBuildRef}')
         kp build logs tutorial-image -n test-builder --build ${BUILD}
+        kp build status tutorial-image -n test-builder -b $BUILD
+        if [ "$(kubectl -n test-builder get build $BUILD_REF -o jsonpath='{.status.conditions[0].status}')" != "True" ]; then exit 1; fi
 #    - name: Update Kubernetes deployment
 #      run: |
 #        kubectl set image deployment/my-app my-app=<registry>/<repository>:${{ github.sha }}
