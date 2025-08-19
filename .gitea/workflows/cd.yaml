@@ -56,12 +56,12 @@ jobs:
         KUBE_CA_DATA: ${{ secrets.KUBE_CA_DATA }}
         KUBE_USER_TOKEN: ${{ secrets.KUBE_USER_TOKEN }}
       run: |
+        echo "Kubernetes connection config (KUBECONFIG): ${KUBECONFIG}"
+        cat ${KUBECONFIG}
         CACERT=$(mktemp)
         echo "${KUBE_CA_DATA}" | base64 -d > ${CACERT}
         curl -k -I https://kubernetes.default.svc/ || exit 0
         curl --cacert ${CACERT} --header "Authorization: Bearer ${KUBE_USER_TOKEN}" -X GET https://kubernetes.default.svc/api
-        echo "Kubernetes connection config (KUBECONFIG): ${KUBECONFIG}"
-        cat ${KUBECONFIG}
         kubectl get pod -A
     - name: Update kpack image
       env:
