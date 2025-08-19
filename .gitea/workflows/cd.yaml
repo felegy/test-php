@@ -29,8 +29,8 @@ jobs:
         KUBE_CA_DATA: ${{ secrets.KUBE_CA_DATA }}
         KUBE_USER_TOKEN: ${{ secrets.KUBE_USER_TOKEN }}
       run: |
-        mkdir -p ~/.kube
-        tee "${HOME}/.kube/config" <<EOF
+        KUBECONFIG=$(mktemp)
+        tee "${KUBECONFIG}" <<EOF
         apiVersion: v1
         kind: Config
         clusters:
@@ -50,11 +50,18 @@ jobs:
           user:
             token: ${KUBE_USER_TOKEN}
         EOF
-        chmod 700 "${HOME}/.kube"
-        chmod 600 "${HOME}/.kube/config"
+        echo "KUBECONFIG=${KUBECONFIG}" >> $GITHUB_ENV
     - name: Check kubernetes connection
+      env:
+        KUBE_CA_DATA: ${{ secrets.KUBE_CA_DATA }}
+        KUBE_USER_TOKEN: ${{ secrets.KUBE_USER_TOKEN }}
       run: |
-        curl -k -I https://kubernetes.default.svc || exit 0
+        CACERT=$(mktemp)
+        echo "${KUBE_CA_DATA}" | base64 -d > ${CACERT}
+        curl -k -I https://kubernetes.default.svc/ || exit 0
+        curl --cacert ${CACERT} --header "Authorization: Bearer ${KUBE_USER_TOKEN}" -X GET https://kubernetes.default.svc/api
+        echo "Kubernetes connection config (KUBECONFIG): ${KUBECONFIG}"
+        cat ${KUBECONFIG}
         kubectl get pod -A
     - name: Update kpack image
       env:
