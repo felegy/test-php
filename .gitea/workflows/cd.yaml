@@ -55,7 +55,7 @@ jobs:
       run: |
         echo "Kubernetes connection config (KUBECONFIG): ${KUBECONFIG}"
         cat ${KUBECONFIG}
-        kubectl get pod -A
+        kubectl get pod
     - name: Update kpack image
       env:
         SHA: ${{ github.sha }}
