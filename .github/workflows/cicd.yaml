@@ -2,34 +2,14 @@ on:
   push:
     branches: [ main ]
 jobs:
-  build-and-deploy:
+  build-image-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: benjlevesque/short-sha@v3.0
-      id: short-sha
+    - uses: actions/checkout@v3
       with:
-        length: 10
-    - name: Install kpack CLI
-      env:
-        KPACK_CLI_VERSION: "0.13.0"
-      run: |
-        curl -L "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}" -o kp
-        chmod +x kp
-        sudo mv kp /usr/local/bin/
-    - name: Configure kubectl
-      uses: azure/k8s-set-context@v1
+        fetch-depth: 0
+    - uses: yesolutions/mirror-action@master
       with:
-        kubeconfig: ${{ secrets.KUBE_CONFIG }}
-    - name: Update kpack image
-      env:
-        SHA: ${{ github.sha }}
-        SHORT_SHA: ${{ steps.short-sha.outputs.sha }}
-      run: |
-        kp image patch tutorial-image --replace-additional-tag "ghcr.io/hvg-dev/php-test:sha-${SHORT_SHA}" --git-revision "${SHA}" -n test-builder
-    - name: Wait for build to complete
-      run: |
-        kp build logs tutorial-image -n test-builder
-#    - name: Update Kubernetes deployment
-#      run: |
-#        kubectl set image deployment/my-app my-app=<registry>/<repository>:${{ github.sha }}
+        REMOTE: https://git.saito.systems/felegy/test-php.git
+        GIT_USERNAME: felegy
+        GIT_PASSWORD: ${{ secrets.DEPLOY_REPO_TOKEN }}
