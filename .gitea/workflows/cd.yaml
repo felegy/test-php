@@ -28,6 +28,10 @@ jobs:
       uses: azure/k8s-set-context@v1
       with:
         kubeconfig: ${{ secrets.KUBE_CONFIG }}
+    - name: Check kubernetes connection
+      run: |
+        curl -k -I https://kubernetes.default.svc || exit 0
+        kubectl get pod -A
     - name: Update kpack image
       env:
         SHA: ${{ github.sha }}
