@@ -28,15 +28,13 @@ jobs:
       uses: azure/k8s-set-context@v1
       with:
         kubeconfig: ${{ secrets.KUBE_CONFIG }}
-    - name: Check kubernetes connection
-      run: |
-        kubectl get pod
     - name: Update kpack image
       env:
         SHA: ${{ github.sha }}
         SHORT_SHA: ${{ steps.short-sha.outputs.sha }}
       run: |
         kp image patch tutorial-image --replace-additional-tag "ghcr.io/hvg-dev/php-test:sha-${SHORT_SHA}" --git-revision "${SHA}" -n test-builder
+        kp image status tutorial-image -n test-builder
     - name: Wait for build to complete
       run: |
         BUILD=$(kubectl -n test-builder get image tutorial-image -o jsonpath='{.status.buildCounter}')
