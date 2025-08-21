@@ -1,8 +1,15 @@
 on:
   push:
     branches: [ main ]
+env:
+  NAMESPACE: ${{ github.repository_owner }}
+  DOCKER_REGISTRY: ghcr.io
+  DOCKER_REPOSITORY: ${{ github.repository }}
+  IMAGE_NAME: ${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}
 jobs:
   build-and-deploy:
+    env:
+      IMAGE: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPOSITORY }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -33,15 +40,15 @@ jobs:
         SHA: ${{ github.sha }}
         SHORT_SHA: ${{ steps.short-sha.outputs.sha }}
       run: |
-        kp image patch tutorial-image --replace-additional-tag "ghcr.io/hvg-dev/php-test:sha-${SHORT_SHA}" --git-revision "${SHA}" -n test-builder
-        kp image status tutorial-image -n test-builder
+        kp image patch $IMAGE_NAME --replace-additional-tag "${IMAGE}:sha-${SHORT_SHA}" --git-revision "${SHA}" -n $NAMESPACE
+        kp image status $IMAGE_NAME -n $NAMESPACE
     - name: Wait for build to complete
       run: |
-        BUILD=$(kubectl -n test-builder get image tutorial-image -o jsonpath='{.status.buildCounter}')
-        BUILD_REF=$(kubectl -n test-builder get image tutorial-image -o jsonpath='{.status.latestBuildRef}')
-        kp build logs tutorial-image -n test-builder --build ${BUILD}
-        kp build status tutorial-image -n test-builder -b $BUILD
-        if [ "$(kubectl -n test-builder get build $BUILD_REF -o jsonpath='{.status.conditions[0].status}')" != "True" ]; then exit 1; fi
+        BUILD=$(kubectl -n $NAMESPACE get image $IMAGE_NAME -o jsonpath='{.status.buildCounter}')
+        BUILD_REF=$(kubectl -n $NAMESPACE get image $IMAGE_NAME -o jsonpath='{.status.latestBuildRef}')
+        kp build logs $IMAGE_NAME -n $NAMESPACE --build ${BUILD}
+        kp build status $IMAGE_NAME -n $NAMESPACE -b $BUILD
+        if [ "$(kubectl -n $NAMESPACE get build $BUILD_REF -o jsonpath='{.status.conditions[0].status}')" != "True" ]; then exit 1; fi
 #    - name: Update Kubernetes deployment
 #      run: |
 #        kubectl set image deployment/my-app my-app=<registry>/<repository>:${{ github.sha }}
