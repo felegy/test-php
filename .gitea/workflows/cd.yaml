@@ -12,10 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: benjlevesque/short-sha@v3.0
-      id: short-sha
-      with:
-        length: 10
     - name: Install kpack-cli
       env:
         KPACK_CLI_VERSION: "0.13.0"
@@ -37,8 +33,9 @@ jobs:
     - name: Update kpack image
       env:
         SHA: ${{ github.sha }}
-        SHORT_SHA: ${{ steps.short-sha.outputs.sha }}
       run: |
+        SHORT_SHA=$(git rev-parse --short HEAD)
+        echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
         IMAGE_NAME="${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}-${GITHUB_REF##*/}"
         echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
         kp image patch $IMAGE_NAME --replace-additional-tag "${IMAGE}:sha-${SHORT_SHA}" --git-revision "${SHA}" -n $NAMESPACE
