@@ -39,7 +39,7 @@ jobs:
         SHA: ${{ github.sha }}
         SHORT_SHA: ${{ steps.short-sha.outputs.sha }}
       run: |
-        IMAGE_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}-${GITHUB_REF##*/}
+        IMAGE_NAME="${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}-${GITHUB_REF##*/}"
         echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
         kp image patch $IMAGE_NAME --replace-additional-tag "${IMAGE}:sha-${SHORT_SHA}" --git-revision "${SHA}" -n $NAMESPACE
         kp image status $IMAGE_NAME -n $NAMESPACE
