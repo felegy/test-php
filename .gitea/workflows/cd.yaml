@@ -1,6 +1,8 @@
 on:
   push:
-    branches: [ main ]
+    branches:
+    - main
+    - dev
 env:
   NAMESPACE: ${{ github.repository_owner }}
   DOCKER_REGISTRY: ghcr.io
@@ -18,8 +20,8 @@ jobs:
       working-directory: /tmp
       run: |
         mkdir kp-binaries
-        curl -L "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}" -o kp-binaries/kp-linux-amd64-${KPACK_CLI_VERSION}
-        curl -LO "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}.sha256"
+        curl -sL "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}" -o kp-binaries/kp-linux-amd64-${KPACK_CLI_VERSION}
+        curl -sLO "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}.sha256"
         sha256sum -c kp-linux-amd64-${KPACK_CLI_VERSION}.sha256 || exit 1
         sudo mv kp-binaries/kp-linux-amd64-${KPACK_CLI_VERSION} /usr/local/bin/kp
         sudo chmod +x /usr/local/bin/kp

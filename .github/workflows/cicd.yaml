@@ -1,6 +1,8 @@
 on:
   push:
-    branches: [ main ]
+    branches:
+    - main
+    - dev
 jobs:
   build-image-and-deploy:
     runs-on: ubuntu-latest
@@ -10,6 +12,6 @@ jobs:
         fetch-depth: 0
     - uses: yesolutions/mirror-action@master
       with:
-        REMOTE: https://git.saito.systems/felegy/test-php.git
-        GIT_USERNAME: felegy
+        REMOTE: ${{ secrets.DEPLOY_REPO_URL }}
+        GIT_USERNAME: ${{ secrets.DEPLOY_REPO_USERNAME }}
         GIT_PASSWORD: ${{ secrets.DEPLOY_REPO_TOKEN }}
