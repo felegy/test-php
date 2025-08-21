@@ -10,7 +10,7 @@ jobs:
       id: short-sha
       with:
         length: 10
-    - name: Set up kpack-cli
+    - name: Install kpack-cli
       env:
         KPACK_CLI_VERSION: "0.13.0"
       working-directory: /tmp
@@ -22,39 +22,14 @@ jobs:
         sudo mv kp-binaries/kp-linux-amd64-${KPACK_CLI_VERSION} /usr/local/bin/kp
         sudo chmod +x /usr/local/bin/kp
         kp version
-    - name: Set up kubectl
+    - name: Install kubectl
       uses: azure/setup-kubectl@v4
-    - name: Configure (kubectl)
-      env:
-        KUBE_CA_DATA: ${{ secrets.KUBE_CA_DATA }}
-        KUBE_USER_TOKEN: ${{ secrets.KUBE_USER_TOKEN }}
-      run: |
-        KUBECONFIG=$(mktemp)
-        tee "${KUBECONFIG}" <<EOF
-        apiVersion: v1
-        kind: Config
-        clusters:
-        - cluster:
-          certificate-authority-data: ${KUBE_CA_DATA}
-          server: https://kubernetes.default.svc
-          name: local
-        contexts:
-        - context:
-          name: local
-          cluster: local
-          user: user
-          namespace: test-builder
-        current-context: local
-        users:
-        - name: local
-          user:
-            token: ${KUBE_USER_TOKEN}
-        EOF
-        echo "KUBECONFIG=${KUBECONFIG}" >> $GITHUB_ENV
+    - name: Configure kubectl
+      uses: azure/k8s-set-context@v1
+      with:
+        kubeconfig: ${{ secrets.KUBE_CONFIG }}
     - name: Check kubernetes connection
       run: |
-        echo "Kubernetes connection config (KUBECONFIG): ${KUBECONFIG}"
-        cat ${KUBECONFIG}
         kubectl get pod
     - name: Update kpack image
       env:
