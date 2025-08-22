@@ -14,14 +14,14 @@ jobs:
       uses: AnimMouse/setup-cloudflared@v2
     - name: Configure ssh
       run: |
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-        tee ~/.ssh/config <<EOF
+        mkdir -p .ssh
+        tee .ssh/config <<EOF
         Host ssh-git.saito.systems
           ProxyCommand cloudflared access ssh --hostname %h
         EOF
     - uses: yesolutions/mirror-action@master
       with:
         REMOTE: ${{ secrets.DEPLOY_REPO_URL }}
+        GIT_SSH_COMMAND: "ssh -F .ssh/config"
         GIT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         GIT_SSH_NO_VERIFY_HOST: "true"
