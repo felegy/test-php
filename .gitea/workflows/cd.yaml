@@ -1,6 +1,8 @@
 on:
   push:
-    branches: [ main ]
+    branches:
+    - main
+    - dev
 env:
   NAMESPACE: ${{ github.repository_owner }}
   DOCKER_REGISTRY: ghcr.io
@@ -14,14 +16,14 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install kpack-cli
       env:
-        KPACK_CLI_VERSION: "0.13.0"
+        KPACK_CLI_VERSION: 0.13.0
+        KPACK_CLI_SHA256: 52f0c927a1350f4f1bb281575ec246f406fb96aa69dc974ed10a2fe52c538158
       working-directory: /tmp
       run: |
-        mkdir kp-binaries
-        curl -L "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}" -o kp-binaries/kp-linux-amd64-${KPACK_CLI_VERSION}
-        curl -LO "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}.sha256"
-        sha256sum -c kp-linux-amd64-${KPACK_CLI_VERSION}.sha256 || exit 1
-        sudo mv kp-binaries/kp-linux-amd64-${KPACK_CLI_VERSION} /usr/local/bin/kp
+        set -ex
+        curl -sLO "https://github.com/buildpacks-community/kpack-cli/releases/download/v${KPACK_CLI_VERSION}/kp-linux-amd64-${KPACK_CLI_VERSION}"
+        echo "${KPACK_CLI_SHA256} kp-linux-amd64-${KPACK_CLI_VERSION}" | sha256sum --check || exit 1
+        sudo mv kp-linux-amd64-${KPACK_CLI_VERSION} /usr/local/bin/kp
         sudo chmod +x /usr/local/bin/kp
         kp version
     - name: Install kubectl

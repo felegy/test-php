@@ -1,15 +1,22 @@
 on:
   push:
-    branches: [ main ]
+    branches:
+    - main
+    - dev
 jobs:
   build-image-and-deploy:
     runs-on: ubuntu-latest
     steps:
+
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - uses: yesolutions/mirror-action@master
+
+    - uses: felegy/mirror-action@master
       with:
-        REMOTE: https://git.saito.systems/felegy/test-php.git
-        GIT_USERNAME: felegy
-        GIT_PASSWORD: ${{ secrets.DEPLOY_REPO_TOKEN }}
+        REMOTE: git@${{ secrets.DEPLOY_REPO }}:${{ github.repository }}.git
+        SSH_CONFIG: |
+          Host ${{ secrets.DEPLOY_REPO }}
+            ProxyCommand cloudflared access ssh --hostname %h
+        GIT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        GIT_SSH_NO_VERIFY_HOST: "true"
