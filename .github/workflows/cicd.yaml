@@ -7,21 +7,16 @@ jobs:
   build-image-and-deploy:
     runs-on: ubuntu-latest
     steps:
+
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Setup cloudflared
-      uses: AnimMouse/setup-cloudflared@v2
-    - name: Configure ssh
-      run: |
-        mkdir -p .ssh
-        tee .ssh/config <<EOF
-        Host ssh-git.saito.systems
-          ProxyCommand cloudflared access ssh --hostname %h
-        EOF
-    - uses: yesolutions/mirror-action@master
+
+    - uses: felegy/mirror-action@master
       with:
         REMOTE: ${{ secrets.DEPLOY_REPO_URL }}
-        GIT_SSH_COMMAND: "ssh -F .ssh/config"
+        SSH_CONFIG: |
+          Host ssh-git.saito.systems
+            ProxyCommand cloudflared access ssh --hostname %h
         GIT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         GIT_SSH_NO_VERIFY_HOST: "true"
